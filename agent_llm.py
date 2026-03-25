@@ -14,7 +14,7 @@ def llm_think(task: str, last_result: str =None)->  dict:
         return {"tool": "finish", "input": last_result}
 
     #Ask the LLM what tool to use
-    prompt = f"""Ypu are an AI agent. Give a task, decide which tool to use
+    prompt = f"""You are an AI agent. Give a task, decide which tool to use
 Available Tools: search, weather, food, market, finish
 
 Task: {task}

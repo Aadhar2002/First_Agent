@@ -29,6 +29,15 @@ Reply with ONLY the tool name. Nothing else."""
     tool = response.choices[0].message.content.strip().lower()
     return {"tool": tool, "input": task}
 
+def llm_act(action: dict) -> str:
+    #LLM generates the real answer!
+    prompt = f"Answer this question in one sentence: {action['input']}"
+
+    response = client.chat.completions.create(
+        model = "llama-3.3-70b-versatile",
+        messages = [{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()
 def run_agent(task:str):
     print(f"\nAgent recived task:{task}")
     print("-" * 51)
@@ -42,25 +51,16 @@ def run_agent(task:str):
         print(f"\nStep {step}: Agent decided to:  {action['tool']}")
 
         #Simple tool execution
-        if action['tool'] == "search":
-            last_result = f"New Delhi is the capital of India."
-
-        elif action['tool'] == "weather":
-            last_result = f"The weather is Rainy day with 98% chances of precipitation."
-
-        elif action['tool']== "food":
-            last_result = f"The famous food if Delhi is Chole Bhature."
-
-        elif action['tool']== "market":
-            last_result = f"The famous market of Delhi is Chandani Chowk."
-
-        elif action['tool'] == "finish":
-            print(f"\n Task completed! Final Answer: {last_result}")
+        if action['tool'] == 'finish':
+            print(f"\nTask Complete! Final Answer: {last_result}")
             break
+        else:
+            last_result = llm_act(action)
 
         print(f"Step {step}: Result: {last_result}")
 
         step +=1
 
-run_agent("What is the capital of India?")
-run_agent("What is the weather today?")
+run_agent("What is the capital France?")
+run_agent("What is the famous food of Delhi?")
+run_agent("Who Intvented the telephone?") #A new question which was not hardcoded earlier

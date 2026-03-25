@@ -13,22 +13,38 @@ client = Groq(api_key= os.getenv("GROQ_API_KEY"))
 
 #Real Tools
 def search(query: str) -> str:
-    #using Wikipedia API - completely free, no key needed!
-    query = query.replace(" ", "_")
-    url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{query}"
-    print(f"URL being called: {url}")
+    #Use wikipedia search API - more realiable than direct page lookup
+    search_query = query.strip().replace(" ", "+")
+    search_url = f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={search_query}&format=json"
 
     try:
         request = urllib.request.Request(
-            url,
-            headers={"User-Agent": "MyAgent/1.0 (learning project)"}
+            search_url,
+            headers= {"User-Agent": "MyAgent/1.0 (learning project)"}
         )
         with urllib.request.urlopen(request) as response:
             data = json.loads(response.read())
-        return data.get("extract", "No result found")[:500]
+
+        #Get the first search result title
+        results = data["query"]["search"]
+        if not results:
+            return "No results found"
+
+        #Now get the summary of the first result
+        title = results[0]["title"].replace(" ", "_")
+        summary_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{title}"
+
+        request2 = urllib.request.Request(
+            summary_url,
+            headers={"User-Agent": "MyAgent/1.0 (learning project)"}
+        )
+        with urllib.request.urlopen(request2) as response2:
+            summary_data = json.loads(response2.read())
+
+        return summary_data.get("extract", "No result found")[:500]
+
     except Exception as e:
         return f"Error: {str(e)}"
-
 def calculate(expression: str) -> str:
     try:
         result = eval(expression)
@@ -106,5 +122,5 @@ def run_agent(task:str):
 
         step +=1
 
-run_agent("Who is Alaxander Graham Bell?")
+run_agent("Tell me about Elon Musk")
 run_agent("What is 2547 divided by 3")
